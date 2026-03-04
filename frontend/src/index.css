@@ -1,0 +1,250 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+
+/* @import 'tailwindcss/base';
+@import 'tailwindcss/components';
+@import 'tailwindcss/utilities'; */
+
+/* :root {
+  font-family: system-ui, Avenir, Helvetica, Arial, sans-serif;
+  line-height: 1.5;
+  font-weight: 400;
+
+  color-scheme: light dark;
+  color: rgba(255, 255, 255, 0.87);
+  background-color: #242424;
+
+  font-synthesis: none;
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+a {
+  font-weight: 500;
+  color: #646cff;
+  text-decoration: inherit;
+}
+a:hover {
+  color: #535bf2;
+}
+
+body {
+  margin: 0;
+  display: flex;
+  place-items: center;
+  min-width: 320px;
+  min-height: 100vh;
+}
+
+h1 {
+  font-size: 3.2em;
+  line-height: 1.1;
+}
+
+button {
+  border-radius: 8px;
+  border: 1px solid transparent;
+  padding: 0.6em 1.2em;
+  font-size: 1em;
+  font-weight: 500;
+  font-family: inherit;
+  background-color: #1a1a1a;
+  cursor: pointer;
+  transition: border-color 0.25s;
+}
+button:hover {
+  border-color: #646cff;
+}
+button:focus,
+button:focus-visible {
+  outline: 4px auto -webkit-focus-ring-color;
+}
+
+@media (prefers-color-scheme: light) {
+  :root {
+    color: #213547;
+    background-color: #ffffff;
+  }
+  a:hover {
+    color: #747bff;
+  }
+  button {
+    background-color: #f9f9f9;
+  }
+} */
+
+@keyframes marquee {
+  0%   { transform: translateX(0); }
+  100% { transform: translateX(-50%); }
+}
+
+.animate-marquee {
+  display: flex;
+  animation: marquee 18s linear infinite;
+}
+
+.marquee-wrapper {
+  overflow: hidden;
+  width: 100%;
+}
+
+.marquee-wrapper:hover .animate-marquee {
+  animation-play-state: paused;
+}
+
+/* ------------------------------------ Home.jsx -------------------------------------------------------------- */
+
+/* ── Feature Card Animations ── */
+@keyframes fadeSlideUp {
+  from { opacity: 0; transform: translateY(32px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+.feature-card {
+  opacity: 0;
+  animation: fadeSlideUp 0.6s ease forwards;
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.feature-card:nth-child(1) { animation-delay: 0.1s; }
+.feature-card:nth-child(2) { animation-delay: 0.25s; }
+.feature-card:nth-child(3) { animation-delay: 0.4s; }
+
+.feature-card:hover {
+  transform: translateY(-8px) scale(1.02);
+  box-shadow: 0 20px 48px rgba(0, 0, 0, 0.13), 0 4px 16px rgba(0, 0, 0, 0.07) !important;
+}
+
+.feature-card .card-icon {
+  transition: transform 0.35s ease;
+}
+
+.feature-card:hover .card-icon {
+  transform: rotate(-8deg) scale(1.15);
+}
+
+.feature-card .card-bar {
+  transition: height 0.3s ease, opacity 0.3s ease;
+  height: 4px;
+  opacity: 0.7;
+}
+
+.feature-card:hover .card-bar {
+  height: 6px;
+  opacity: 1;
+}
+
+/* ── How It Works Steps ── */
+.process-step {
+  opacity: 0;
+  animation: fadeSlideUp 0.55s ease forwards;
+}
+
+.process-step:hover > div:first-child > div:last-child {
+  transform: scale(1.1);
+  box-shadow: 0 8px 32px rgba(99,102,241,0.25) !important;
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+/* ── Analytics Dashboard Section ── */
+@keyframes fadeSlideLeft {
+  from { opacity: 0; transform: translateX(-28px); }
+  to   { opacity: 1; transform: translateX(0); }
+}
+
+@keyframes fadeSlideRight {
+  from { opacity: 0; transform: translateX(28px); }
+  to   { opacity: 1; transform: translateX(0); }
+}
+
+@keyframes growWidth {
+  from { width: 0 !important; }
+}
+
+@keyframes drawDonut {
+  from { stroke-dasharray: 0 289; }
+  to   { stroke-dasharray: 197 289; }
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+
+.dash-header    { opacity:0; animation: fadeSlideUp   0.6s ease 0.05s forwards; }
+.dash-card      { opacity:0; animation: fadeIn        0.7s ease 0.2s  forwards; }
+.dash-chart     { opacity:0; animation: fadeSlideLeft 0.65s ease 0.3s forwards; }
+.dash-donut     { opacity:0; animation: fadeSlideRight 0.65s ease 0.3s forwards; }
+.dash-products  { opacity:0; animation: fadeSlideLeft 0.65s ease 0.45s forwards; }
+.dash-inventory { opacity:0; animation: fadeSlideRight 0.65s ease 0.45s forwards; }
+
+.dash-bar {
+  width: 0;
+  animation: growWidth 1.2s cubic-bezier(0.4,0,0.2,1) 0.8s forwards;
+}
+
+.dash-donut-circle {
+  stroke-dasharray: 0 289;
+  animation: drawDonut 1.4s cubic-bezier(0.4,0,0.2,1) 0.6s forwards;
+}
+
+.dash-inner-card {
+  transition: transform 0.25s ease, box-shadow 0.25s ease;
+}
+.dash-inner-card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 12px 32px rgba(0,0,0,0.10) !important;
+}
+
+.dash-row {
+  opacity: 0;
+  animation: fadeSlideUp 0.4s ease forwards;
+}
+.dash-row:nth-child(1) { animation-delay: 0.85s; }
+.dash-row:nth-child(2) { animation-delay: 1.0s; }
+.dash-row:nth-child(3) { animation-delay: 1.15s; }
+
+/* ── Hover: Revenue Chart — line glows + area brightens ── */
+@keyframes chartPulse {
+  0%, 100% { filter: drop-shadow(0 0 0px #3b82f6); }
+  50%       { filter: drop-shadow(0 0 8px #3b82f6cc); }
+}
+
+.dash-chart:hover svg path:last-of-type {
+  animation: chartPulse 1.4s ease infinite;
+  stroke: #2563eb;
+  stroke-width: 3.5;
+  transition: stroke 0.3s ease, stroke-width 0.3s ease;
+}
+
+.dash-chart:hover svg path:first-of-type {
+  opacity: 1.4;
+  transition: opacity 0.3s ease;
+}
+
+/* ── Hover: Donut — re-fills from 0%→68% on each mouse-enter (handled via React key) ── */
+
+/* ── Hover: Product Bars — brightness pulse ── */
+@keyframes barPulse {
+  0%, 100% { filter: brightness(1);   transform: scaleY(1); }
+  50%       { filter: brightness(1.3); transform: scaleY(1.5); }
+}
+
+.dash-products:hover .dash-bar {
+  animation: barPulse 1.2s ease infinite, growWidth 1.2s cubic-bezier(0.4,0,0.2,1) 0.8s forwards;
+  transform-origin: left center;
+}
+
+/* ── Hover: Inventory rows highlight ── */
+.dash-row {
+  transition: background 0.2s ease;
+}
+.dash-row:hover {
+  background: #f0f7ff;
+}
+.dash-row:hover td {
+  color: #1a2e5a;
+}

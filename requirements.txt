@@ -1,0 +1,100 @@
+# ==============================
+# 🔹 Backend Framework
+# ==============================
+
+fastapi==0.110.0
+# Main backend framework used to build REST APIs
+
+uvicorn==0.29.0
+# ASGI server used to run FastAPI application
+
+python-multipart==0.0.9
+# Required to handle file uploads (image upload from frontend)
+
+
+# ==============================
+# 🔹 Database
+# ==============================
+
+sqlalchemy==2.0.29
+# ORM used to interact with database (create tables, queries, relationships)
+
+psycopg2-binary==2.9.9
+# PostgreSQL database driver (remove if using SQLite)
+
+sqlite-utils==3.36
+# Utility tools for SQLite (if using SQLite locally)
+
+
+# ==============================
+# 🔹 Authentication & Security
+# ==============================
+
+passlib[bcrypt]==1.7.4
+# Password hashing using bcrypt algorithm
+
+python-jose==3.3.0
+# Used to create and verify JWT tokens for authentication
+
+
+# ==============================
+# 🔹 Image Processing (AI Part)
+# ==============================
+
+opencv-python==4.9.0.80
+# Used for image reading, resizing, preprocessing
+
+Pillow==10.3.0
+# Image handling and format conversion
+
+numpy==1.26.4
+# Numerical operations for image arrays and embeddings
+
+
+# ==============================
+# 🔹 Deep Learning / Embeddings
+# ==============================
+
+torch==2.2.2
+# PyTorch deep learning framework for CNN model
+
+torchvision==0.17.2
+# Pretrained CNN models (ResNet, MobileNet) for feature extraction
+
+
+# ==============================
+# 🔹 Similarity Search
+# ==============================
+
+scikit-learn==1.4.2
+# Used for cosine similarity calculation between embeddings
+
+
+# ==============================
+# 🔹 Data Analytics
+# ==============================
+
+pandas==2.2.2
+# Used for data manipulation, sales analysis, KPI calculations
+
+matplotlib==3.8.4
+# Used to generate charts if needed on backend
+
+
+# ==============================
+# 🔹 Utility
+# ==============================
+
+python-dotenv==1.0.1
+# Load environment variables (DB URL, secret keys) from .env file
+
+pydantic==2.7.1
+# Data validation for API request and response models
+
+
+
+
+
+# npm install react-router-dom axios
+# npm install -D tailwindcss postcss autoprefixer
+# npx tailwindcss init -p
