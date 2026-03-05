@@ -146,6 +146,7 @@ const DARK = {
 
 export default function Home() {
   const [dark, setDark] = useState(false);
+  const [menuOpen, setMenuOpen] = useState(false);
   const [donutKey, setDonutKey] = useState(0);
   const [donutCount, setDonutCount] = useState(0);
   const [chartKey, setChartKey] = useState(0);
@@ -194,7 +195,7 @@ export default function Home() {
 
       {/* ── Header ── */}
       <header
-        className="w-full sticky top-0 z-50 px-8 py-4 flex items-center justify-between"
+        className="w-full sticky top-0 z-50"
         style={{
           background: t.headerBg,
           borderBottom: `1px solid ${t.headerBorder}`,
@@ -202,93 +203,125 @@ export default function Home() {
           transition: "background 0.4s ease, border-color 0.4s ease",
         }}
       >
-        <Link to="/">
-          <img
-            src="/webname.png"
-            alt="AlphaMetrics"
-            className="h-6 w-auto object-contain"
-            style={{ filter: dark ? "invert(1)" : "none", transition: "filter 0.4s ease" }}
-          />
-        </Link>
+        {/* Top bar */}
+        <div className="px-6 md:px-8 py-4 flex items-center justify-between">
+          {/* Logo */}
+          <Link to="/" onClick={() => setMenuOpen(false)}>
+            <img
+              src="/webname.png"
+              alt="AlphaMetrics"
+              className="h-6 w-auto object-contain"
+              style={{ filter: dark ? "invert(1)" : "none", transition: "filter 0.4s ease" }}
+            />
+          </Link>
 
-        <nav className="flex items-center gap-6">
-          {/* Nav links */}
-          <a
-            href="#"
-            onClick={e => { e.preventDefault(); window.scrollTo({ top: 0, behavior: "smooth" }); }}
-            className="font-medium cursor-pointer"
-            style={{ fontFamily: "'Inter',sans-serif", color: t.navText, fontSize: "0.9rem", letterSpacing: "0.01em", transition: "color 0.2s" }}
-            onMouseEnter={e => e.currentTarget.style.color = t.navHover}
-            onMouseLeave={e => e.currentTarget.style.color = t.navText}
-          >Home</a>
+          {/* Desktop nav */}
+          <nav className="hidden md:flex items-center gap-6">
+            <a
+              href="#"
+              onClick={e => { e.preventDefault(); window.scrollTo({ top: 0, behavior: "smooth" }); }}
+              className="font-medium cursor-pointer"
+              style={{ fontFamily: "'Inter',sans-serif", color: t.navText, fontSize: "0.9rem", letterSpacing: "0.01em", transition: "color 0.2s" }}
+              onMouseEnter={e => e.currentTarget.style.color = t.navHover}
+              onMouseLeave={e => e.currentTarget.style.color = t.navText}
+            >Home</a>
+            <a
+              href="#capabilities"
+              onClick={e => { e.preventDefault(); document.getElementById("capabilities").scrollIntoView({ behavior: "smooth" }); }}
+              className="font-medium cursor-pointer"
+              style={{ fontFamily: "'Inter',sans-serif", color: t.navText, fontSize: "0.9rem", letterSpacing: "0.01em", transition: "color 0.2s" }}
+              onMouseEnter={e => e.currentTarget.style.color = t.navHover}
+              onMouseLeave={e => e.currentTarget.style.color = t.navText}
+            >Capabilities</a>
+            <a
+              href="#the-process"
+              onClick={e => { e.preventDefault(); document.getElementById("the-process").scrollIntoView({ behavior: "smooth" }); }}
+              className="font-medium cursor-pointer"
+              style={{ fontFamily: "'Inter',sans-serif", color: t.navText, fontSize: "0.9rem", letterSpacing: "0.01em", transition: "color 0.2s" }}
+              onMouseEnter={e => e.currentTarget.style.color = t.navHover}
+              onMouseLeave={e => e.currentTarget.style.color = t.navText}
+            >The Process</a>
 
-          <a
-            href="#capabilities"
-            onClick={e => { e.preventDefault(); document.getElementById("capabilities").scrollIntoView({ behavior: "smooth" }); }}
-            className="font-medium cursor-pointer"
-            style={{ fontFamily: "'Inter',sans-serif", color: t.navText, fontSize: "0.9rem", letterSpacing: "0.01em", transition: "color 0.2s" }}
-            onMouseEnter={e => e.currentTarget.style.color = t.navHover}
-            onMouseLeave={e => e.currentTarget.style.color = t.navText}
-          >Capabilities</a>
-
-          <a
-            href="#the-process"
-            onClick={e => { e.preventDefault(); document.getElementById("the-process").scrollIntoView({ behavior: "smooth" }); }}
-            className="font-medium cursor-pointer"
-            style={{ fontFamily: "'Inter',sans-serif", color: t.navText, fontSize: "0.9rem", letterSpacing: "0.01em", transition: "color 0.2s" }}
-            onMouseEnter={e => e.currentTarget.style.color = t.navHover}
-            onMouseLeave={e => e.currentTarget.style.color = t.navText}
-          >The Process</a>
-
-          {/* ── Theme Toggle Switch ── */}
-          <button
-            onClick={() => setDark(d => !d)}
-            title={dark ? "Switch to Light Mode" : "Switch to Dark Mode"}
-            style={{
-              width: "46px",
-              height: "26px",
-              borderRadius: "13px",
-              border: "none",
-              padding: 0,
-              cursor: "pointer",
-              position: "relative",
-              background: dark ? "#10b981" : "#d1d5db",
-              transition: "background 0.35s ease",
-              flexShrink: 0,
-              outline: "none",
-            }}
-            aria-label="Toggle theme"
-          >
-            <span
-              style={{
-                position: "absolute",
-                top: "4px",
-                left: dark ? "22px" : "4px",
-                width: "18px",
-                height: "18px",
-                borderRadius: "50%",
-                background: "#ffffff",
-                transition: "left 0.3s ease",
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "center",
-                fontSize: "10px",
-                boxShadow: "0 1px 4px rgba(0,0,0,0.25)",
-                lineHeight: 1,
-              }}
+            {/* Theme Toggle */}
+            <button
+              onClick={() => setDark(d => !d)}
+              title={dark ? "Switch to Light Mode" : "Switch to Dark Mode"}
+              style={{ width: "46px", height: "26px", borderRadius: "13px", border: "none", padding: 0, cursor: "pointer", position: "relative", background: dark ? "#10b981" : "#d1d5db", transition: "background 0.35s ease", flexShrink: 0, outline: "none" }}
+              aria-label="Toggle theme"
             >
-              {dark ? "🌙" : "☀️"}
-            </span>
-          </button>
+              <span style={{ position: "absolute", top: "4px", left: dark ? "22px" : "4px", width: "18px", height: "18px", borderRadius: "50%", background: "#ffffff", transition: "left 0.3s ease", display: "flex", alignItems: "center", justifyContent: "center", fontSize: "10px", boxShadow: "0 1px 4px rgba(0,0,0,0.25)", lineHeight: 1 }}>
+                {dark ? "🌙" : "☀️"}
+              </span>
+            </button>
 
-          <Link
-            to="/login"
-            className="text-white px-5 py-2 rounded-lg font-semibold"
-            style={{ fontFamily: "'Inter',sans-serif", background: t.loginBtn, fontSize: "0.9rem", letterSpacing: "0.02em", transition: "background 0.2s" }}
-            onMouseEnter={e => e.currentTarget.style.background = t.loginBtnHover}
-            onMouseLeave={e => e.currentTarget.style.background = t.loginBtn}
-          >Login</Link>
-        </nav>
+            <Link
+              to="/login"
+              className="text-white px-5 py-2 rounded-lg font-semibold"
+              style={{ fontFamily: "'Inter',sans-serif", background: t.loginBtn, fontSize: "0.9rem", letterSpacing: "0.02em", transition: "background 0.2s" }}
+              onMouseEnter={e => e.currentTarget.style.background = t.loginBtnHover}
+              onMouseLeave={e => e.currentTarget.style.background = t.loginBtn}
+            >Login</Link>
+          </nav>
+
+          {/* Mobile right side: theme toggle + hamburger */}
+          <div className="flex md:hidden items-center gap-3">
+            {/* Theme Toggle (mobile) */}
+            <button
+              onClick={() => setDark(d => !d)}
+              style={{ width: "40px", height: "22px", borderRadius: "11px", border: "none", padding: 0, cursor: "pointer", position: "relative", background: dark ? "#10b981" : "#d1d5db", transition: "background 0.35s ease", flexShrink: 0, outline: "none" }}
+              aria-label="Toggle theme"
+            >
+              <span style={{ position: "absolute", top: "3px", left: dark ? "19px" : "3px", width: "16px", height: "16px", borderRadius: "50%", background: "#ffffff", transition: "left 0.3s ease", display: "flex", alignItems: "center", justifyContent: "center", fontSize: "9px", boxShadow: "0 1px 3px rgba(0,0,0,0.25)", lineHeight: 1 }}>
+                {dark ? "🌙" : "☀️"}
+              </span>
+            </button>
+
+            {/* Hamburger */}
+            <button
+              onClick={() => setMenuOpen(o => !o)}
+              aria-label="Toggle menu"
+              style={{ background: "none", border: "none", cursor: "pointer", padding: "4px", display: "flex", flexDirection: "column", gap: "5px", outline: "none" }}
+            >
+              <span style={{ display: "block", width: "22px", height: "2px", borderRadius: "2px", background: t.navText, transition: "transform 0.3s ease, opacity 0.3s ease", transform: menuOpen ? "rotate(45deg) translate(5px, 5px)" : "none" }} />
+              <span style={{ display: "block", width: "22px", height: "2px", borderRadius: "2px", background: t.navText, transition: "opacity 0.3s ease", opacity: menuOpen ? 0 : 1 }} />
+              <span style={{ display: "block", width: "22px", height: "2px", borderRadius: "2px", background: t.navText, transition: "transform 0.3s ease, opacity 0.3s ease", transform: menuOpen ? "rotate(-45deg) translate(5px, -5px)" : "none" }} />
+            </button>
+          </div>
+        </div>
+
+        {/* Mobile dropdown menu */}
+        <div
+          className="md:hidden overflow-hidden"
+          style={{
+            maxHeight: menuOpen ? "320px" : "0px",
+            transition: "max-height 0.35s ease",
+            borderTop: menuOpen ? `1px solid ${t.headerBorder}` : "none",
+          }}
+        >
+          <div className="flex flex-col px-6 py-4 gap-1">
+            {[
+              { label: "Home",         onClick: () => { window.scrollTo({ top: 0, behavior: "smooth" }); setMenuOpen(false); } },
+              { label: "Capabilities", onClick: () => { document.getElementById("capabilities").scrollIntoView({ behavior: "smooth" }); setMenuOpen(false); } },
+              { label: "The Process",  onClick: () => { document.getElementById("the-process").scrollIntoView({ behavior: "smooth" }); setMenuOpen(false); } },
+            ].map(item => (
+              <button
+                key={item.label}
+                onClick={item.onClick}
+                style={{ background: "none", border: "none", cursor: "pointer", textAlign: "left", padding: "10px 0", fontFamily: "'Inter',sans-serif", fontWeight: 500, fontSize: "0.95rem", color: t.navText, borderBottom: `1px solid ${t.headerBorder}`, transition: "color 0.2s" }}
+                onMouseEnter={e => e.currentTarget.style.color = t.navHover}
+                onMouseLeave={e => e.currentTarget.style.color = t.navText}
+              >
+                {item.label}
+              </button>
+            ))}
+            <Link
+              to="/login"
+              onClick={() => setMenuOpen(false)}
+              className="text-white text-center rounded-lg font-semibold mt-3 py-2.5"
+              style={{ background: t.loginBtn, fontFamily: "'Inter',sans-serif", fontSize: "0.9rem", letterSpacing: "0.02em", transition: "background 0.2s" }}
+            >Login</Link>
+          </div>
+        </div>
       </header>
 
       {/* ── Hero Section ── */}
