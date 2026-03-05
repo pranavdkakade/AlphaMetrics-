@@ -97,44 +97,25 @@ button:focus-visible {
 
 /* ------------------------------------ Home.jsx -------------------------------------------------------------- */
 
-/* ── Feature Card Animations ── */
+/* ── Feature Card ── */
 @keyframes fadeSlideUp {
-  from { opacity: 0; transform: translateY(32px); }
+  from { opacity: 0; transform: translateY(20px); }
   to   { opacity: 1; transform: translateY(0); }
 }
 
 .feature-card {
   opacity: 0;
-  animation: fadeSlideUp 0.6s ease forwards;
-  transition: transform 0.3s ease, box-shadow 0.3s ease;
+  animation: fadeSlideUp 0.5s ease forwards;
+  transition: transform 0.25s ease, box-shadow 0.25s ease, border-color 0.25s ease;
 }
 
-.feature-card:nth-child(1) { animation-delay: 0.1s; }
-.feature-card:nth-child(2) { animation-delay: 0.25s; }
-.feature-card:nth-child(3) { animation-delay: 0.4s; }
+.feature-card:nth-child(1) { animation-delay: 0.08s; }
+.feature-card:nth-child(2) { animation-delay: 0.18s; }
+.feature-card:nth-child(3) { animation-delay: 0.28s; }
 
 .feature-card:hover {
-  transform: translateY(-8px) scale(1.02);
-  box-shadow: 0 20px 48px rgba(0, 0, 0, 0.13), 0 4px 16px rgba(0, 0, 0, 0.07) !important;
-}
-
-.feature-card .card-icon {
-  transition: transform 0.35s ease;
-}
-
-.feature-card:hover .card-icon {
-  transform: rotate(-8deg) scale(1.15);
-}
-
-.feature-card .card-bar {
-  transition: height 0.3s ease, opacity 0.3s ease;
-  height: 4px;
-  opacity: 0.7;
-}
-
-.feature-card:hover .card-bar {
-  height: 6px;
-  opacity: 1;
+  transform: translateY(-4px);
+  box-shadow: 0 8px 28px rgba(0, 0, 0, 0.10) !important;
 }
 
 /* ── How It Works Steps ── */
@@ -238,13 +219,7 @@ button:focus-visible {
   transform-origin: left center;
 }
 
-/* ── Hover: Inventory rows highlight ── */
+/* ── Inventory row transition — color handled by JS theme tokens ── */
 .dash-row {
   transition: background 0.2s ease;
-}
-.dash-row:hover {
-  background: #f0f7ff;
-}
-.dash-row:hover td {
-  color: #1a2e5a;
 }
