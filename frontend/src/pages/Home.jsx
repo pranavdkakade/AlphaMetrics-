@@ -1,5 +1,5 @@
-import { useState, useEffect } from "react";
-import { Link } from "react-router-dom";
+﻿import { useState, useEffect } from "react";
+import { Link, useNavigate } from "react-router-dom";
 
 /* ────────────────────────────────────────────────
    THEME TOKENS
@@ -145,8 +145,60 @@ const DARK = {
 };
 
 export default function Home() {
+  const navigate = useNavigate();
   const [dark, setDark] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
+  const [showLoginModal, setShowLoginModal] = useState(false);
+  const [loginForm, setLoginForm] = useState({ email: "", password: "" });
+  const [loginError, setLoginError] = useState("");
+  const [showLoginPass, setShowLoginPass] = useState(false);
+
+  const handleLoginFormChange = (e) => setLoginForm({ ...loginForm, [e.target.name]: e.target.value });
+  const submitLoginModal = (e) => {
+    e.preventDefault();
+    if (!loginForm.email || !loginForm.password) {
+      setLoginError("Please fill in all fields.");
+      return;
+    }
+    setLoginError("");
+    setShowLoginModal(false);
+    navigate("/dashboard");
+  };
+  const openLogin = () => { setLoginForm({ email: "", password: "" }); setLoginError(""); setShowLoginModal(true); setShowRegisterModal(false); };
+
+  // ── Register modal state ──
+  const OCCUPATIONS = ["Retail Store Owner","Retail Manager","Inventory Analyst","Sales Executive","Supply Chain Manager","Business Analyst","Entrepreneur","Other"];
+  const [showRegisterModal, setShowRegisterModal] = useState(false);
+  const [regForm, setRegForm] = useState({ name: "", occupation: "", email: "", password: "", confirmPassword: "" });
+  const [regErrors, setRegErrors] = useState({});
+  const [regSubmitted, setRegSubmitted] = useState(false);
+  const [showRegPass, setShowRegPass] = useState(false);
+  const [showRegConfirmPass, setShowRegConfirmPass] = useState(false);
+
+  const handleRegFormChange = (e) => setRegForm({ ...regForm, [e.target.name]: e.target.value });
+  const validateReg = () => {
+    const e = {};
+    if (!regForm.name.trim()) e.name = "Full name is required.";
+    if (!regForm.occupation) e.occupation = "Please select an occupation.";
+    if (!regForm.email.trim()) e.email = "Email is required.";
+    else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(regForm.email)) e.email = "Enter a valid email.";
+    if (!regForm.password) e.password = "Password is required.";
+    else if (regForm.password.length < 6) e.password = "Password must be at least 6 characters.";
+    if (!regForm.confirmPassword) e.confirmPassword = "Please confirm your password.";
+    else if (regForm.password !== regForm.confirmPassword) e.confirmPassword = "Passwords do not match.";
+    return e;
+  };
+  const submitRegModal = (e) => {
+    e.preventDefault();
+    const errs = validateReg();
+    if (Object.keys(errs).length > 0) { setRegErrors(errs); return; }
+    setRegErrors({});
+    setRegSubmitted(true);
+    setTimeout(() => { setShowRegisterModal(false); setRegSubmitted(false); setRegForm({ name: "", occupation: "", email: "", password: "", confirmPassword: "" }); openLogin(); }, 1800);
+  };
+  const openRegister = () => { setRegForm({ name: "", occupation: "", email: "", password: "", confirmPassword: "" }); setRegErrors({}); setRegSubmitted(false); setShowRegisterModal(true); setShowLoginModal(false); };
+  const regFieldStyle = (hasErr) => ({ border: `1.5px solid ${hasErr ? "#ef4444" : "#d1d5db"}`, color: "#111827" });
+
   const [donutKey, setDonutKey] = useState(0);
   const [donutCount, setDonutCount] = useState(0);
   const [chartKey, setChartKey] = useState(0);
@@ -254,13 +306,13 @@ export default function Home() {
               </span>
             </button>
 
-            <Link
-              to="/login"
+            <button
+              onClick={openLogin}
               className="text-white px-5 py-2 rounded-lg font-semibold"
-              style={{ fontFamily: "'Inter',sans-serif", background: t.loginBtn, fontSize: "0.9rem", letterSpacing: "0.02em", transition: "background 0.2s" }}
+              style={{ fontFamily: "'Inter',sans-serif", background: t.loginBtn, fontSize: "0.9rem", letterSpacing: "0.02em", transition: "background 0.2s", border: "none", cursor: "pointer" }}
               onMouseEnter={e => e.currentTarget.style.background = t.loginBtnHover}
               onMouseLeave={e => e.currentTarget.style.background = t.loginBtn}
-            >Login</Link>
+            >Login</button>
           </nav>
 
           {/* Mobile right side: theme toggle + hamburger */}
@@ -314,12 +366,11 @@ export default function Home() {
                 {item.label}
               </button>
             ))}
-            <Link
-              to="/login"
-              onClick={() => setMenuOpen(false)}
+            <button
+              onClick={() => { setMenuOpen(false); openLogin(); }}
               className="text-white text-center rounded-lg font-semibold mt-3 py-2.5"
-              style={{ background: t.loginBtn, fontFamily: "'Inter',sans-serif", fontSize: "0.9rem", letterSpacing: "0.02em", transition: "background 0.2s" }}
-            >Login</Link>
+              style={{ background: t.loginBtn, fontFamily: "'Inter',sans-serif", fontSize: "0.9rem", letterSpacing: "0.02em", transition: "background 0.2s", border: "none", cursor: "pointer", width: "100%" }}
+            >Login</button>
           </div>
         </div>
       </header>
@@ -356,11 +407,11 @@ export default function Home() {
 
           {/* Buttons */}
           <div className="flex items-center gap-4 flex-wrap">
-            <Link
-              to="/login"
+            <button
+              onClick={openLogin}
               className="px-6 py-3 rounded-lg font-semibold text-white text-base transition-all hover:opacity-90"
-              style={{ background: "#10b981" }}
-            >Get Started Free</Link>
+              style={{ background: "#10b981", border: "none", cursor: "pointer" }}
+            >Get Started Free</button>
             <Link
               to="/dashboard"
               className="px-6 py-3 rounded-lg font-semibold text-base border-2 transition-all"
@@ -856,9 +907,9 @@ export default function Home() {
               ))}
             </ul>
             <div className="flex items-center gap-4 flex-wrap mt-2">
-              <a href="/login" className="px-6 py-3 rounded-lg font-semibold text-sm text-white transition-all hover:opacity-90" style={{ background: "#10b981" }}>
+              <button onClick={openLogin} className="px-6 py-3 rounded-lg font-semibold text-sm text-white transition-all hover:opacity-90" style={{ background: "#10b981", border: "none", cursor: "pointer" }}>
                 Start Optimizing Today
-              </a>
+              </button>
             </div>
           </div>
 
@@ -887,108 +938,390 @@ export default function Home() {
       </section>
 
       {/* ── Footer ── */}
-      <footer style={{ background: t.footerBg, borderTop: `1px solid ${t.footerBorder}`, fontFamily: "'Inter',sans-serif", transition: "background 0.4s ease" }}>
-        <div className="max-w-7xl mx-auto px-8 py-16 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-12">
+      <footer style={{ background: t.footerBg, fontFamily: "'Inter',sans-serif", transition: "background 0.4s ease" }}>
+        <div className="max-w-7xl mx-auto px-8 pt-14 pb-10">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-12">
 
-          {/* Brand */}
-          <div className="flex flex-col gap-5">
-            <img
-              src="/webname.png"
-              alt="AlphaMetrics"
-              className="h-8 object-contain self-start"
-              style={{ filter: dark ? "invert(1)" : "none", transition: "filter 0.4s ease" }}
-            />
-            <p style={{ color: t.footerBody, fontSize: "0.875rem", lineHeight: "1.75", letterSpacing: "0.01em" }}>
-              The ultimate AI-powered SaaS platform for smart retail management. Turn data into actionable insights and dominate your market.
-            </p>
-            <div className="flex items-center gap-4 mt-1">
-              {[
-                { label: "LinkedIn",  path: "M16 8a6 6 0 016 6v7h-4v-7a2 2 0 00-2-2 2 2 0 00-2 2v7h-4v-7a6 6 0 016-6zM2 9h4v12H2zM4 6a2 2 0 100-4 2 2 0 000 4z" },
-                { label: "Twitter",   path: "M23 3a10.9 10.9 0 01-3.14 1.53A4.48 4.48 0 0022.43.36a9 9 0 01-2.88 1.1A4.52 4.52 0 0016.11 0c-2.5 0-4.52 2.03-4.52 4.52 0 .35.04.7.11 1.03C7.69 5.4 4.07 3.58 1.64.9a4.52 4.52 0 00-.61 2.27c0 1.57.8 2.95 2.01 3.76A4.5 4.5 0 012 19.54a12.8 12.8 0 006.92 2.03c8.3 0 12.85-6.88 12.85-12.85 0-.2 0-.39-.01-.58A9.17 9.17 0 0023 3z" },
-                { label: "Instagram", path: "M16 11.37A4 4 0 1112.63 8 4 4 0 0116 11.37zM17.5 6.5h.01M7.8 2h8.4C19.4 2 22 4.6 22 7.8v8.4c0 3.2-2.6 5.8-5.8 5.8H7.8C4.6 22 2 19.4 2 16.2V7.8C2 4.6 4.6 2 7.8 2z" },
-              ].map(s => (
-                <a key={s.label} href="#" aria-label={s.label} className="flex items-center gap-1.5 cursor-pointer"
-                  onMouseEnter={e => { e.currentTarget.querySelector("svg").style.stroke = "#16a34a"; e.currentTarget.querySelector("span").style.color = "#16a34a"; }}
-                  onMouseLeave={e => { e.currentTarget.querySelector("svg").style.stroke = "#94a3b8"; e.currentTarget.querySelector("span").style.color = "#94a3b8"; }}
-                >
-                  <svg className="w-4 h-4" fill="none" stroke="#94a3b8" strokeWidth="2" viewBox="0 0 24 24" style={{ transition: "stroke 0.2s" }}>
-                    <path strokeLinecap="round" strokeLinejoin="round" d={s.path} />
-                  </svg>
-                  <span style={{ color: "#94a3b8", fontSize: "0.78rem", fontWeight: 500, transition: "color 0.2s", letterSpacing: "0.01em" }}>{s.label}</span>
-                </a>
-              ))}
+            {/* Brand col — spans 2 cols */}
+            <div className="lg:col-span-2 flex flex-col gap-5">
+              <img
+                src="/webname.png"
+                alt="AlphaMetrics"
+                className="h-8 object-contain self-start"
+                style={{ filter: dark ? "invert(1)" : "none", transition: "filter 0.4s ease" }}
+              />
+              <span style={{ display:"inline-flex", alignItems:"center", gap:"0.4rem", background:"rgba(22,163,74,0.10)", color:"#16a34a", fontSize:"0.68rem", fontWeight:700, letterSpacing:"0.09em", padding:"0.28rem 0.75rem", borderRadius:"999px", border:"1px solid rgba(22,163,74,0.25)", width:"fit-content" }}>
+                <span style={{ width:"6px", height:"6px", borderRadius:"50%", background:"#16a34a", display:"inline-block", boxShadow:"0 0 5px #16a34a" }} />
+                AI-POWERED PLATFORM
+              </span>
+              <p style={{ color: t.footerBody, fontSize: "0.83rem", lineHeight: "1.85", maxWidth: "340px" }}>
+                AI-Powered Retail Intelligence Platform designed to help small retailers track inventory, analyze sales performance, and make data-driven decisions using computer vision and analytics.
+              </p>
+              <div className="flex items-center gap-3">
+                {[
+                  { label:"Twitter", filled:true, icon:<path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-4.714-6.231-5.401 6.231H2.746l7.73-8.835L1.254 2.25H8.08l4.253 5.622 5.911-5.622Zm-1.161 17.52h1.833L7.084 4.126H5.117z"/> },
+                  { label:"Instagram", filled:false, icon:<><rect x="2" y="2" width="20" height="20" rx="5" ry="5"/><circle cx="12" cy="12" r="4"/><circle cx="17.5" cy="6.5" r="0.8" fill="currentColor" stroke="none"/></> },
+                  { label:"Facebook", filled:true, icon:<path d="M22 12c0-5.523-4.477-10-10-10S2 6.477 2 12c0 4.991 3.657 9.128 8.438 9.878v-6.987H7.898V12h2.54V9.797c0-2.506 1.492-3.89 3.777-3.89 1.094 0 2.238.195 2.238.195v2.46h-1.26c-1.243 0-1.63.771-1.63 1.562V12h2.773l-.443 2.89h-2.33v6.988C18.343 21.128 22 16.991 22 12z"/> },
+                ].map(({ label, filled, icon }) => (
+                  <a key={label} href="#" aria-label={label}
+                    style={{ display:"flex", alignItems:"center", justifyContent:"center", width:"36px", height:"36px", borderRadius:"10px", border:`1px solid ${t.footerBorder}`, color:t.footerLink, background:"transparent", transition:"all 0.2s", cursor:"pointer", textDecoration:"none" }}
+                    onMouseEnter={e => { e.currentTarget.style.borderColor="#16a34a"; e.currentTarget.style.color="#16a34a"; e.currentTarget.style.background="rgba(22,163,74,0.09)"; }}
+                    onMouseLeave={e => { e.currentTarget.style.borderColor=t.footerBorder; e.currentTarget.style.color=t.footerLink; e.currentTarget.style.background="transparent"; }}
+                  >
+                    <svg style={{ width:"16px", height:"16px" }} fill={filled ? "currentColor" : "none"} stroke={filled ? "none" : "currentColor"} strokeWidth="1.8" viewBox="0 0 24 24">{icon}</svg>
+                  </a>
+                ))}
+              </div>
             </div>
-          </div>
 
-          {/* Product */}
-          <div>
-            <h4 style={{ color: t.footerHead, fontSize: "0.75rem", fontWeight: 700, letterSpacing: "0.1em", textTransform: "uppercase", marginBottom: "1.25rem" }}>Product</h4>
-            <ul className="flex flex-col gap-3">
-              {["Platform Overview","Predictive Analytics","AI Engine","Inventory Control","Integrations"].map(link => (
-                <li key={link}>
-                  <a href="#" style={{ color: t.footerLink, fontSize: "0.875rem", transition: "color 0.2s" }}
-                    onMouseEnter={e => e.currentTarget.style.color = "#16a34a"}
-                    onMouseLeave={e => e.currentTarget.style.color = t.footerLink}
-                  >{link}</a>
-                </li>
-              ))}
-            </ul>
-          </div>
+            {/* Product */}
+            <div>
+              <div style={{ display:"flex", alignItems:"center", gap:"0.5rem", marginBottom:"1.25rem" }}>
+                <span style={{ width:"3px", height:"14px", background:"#16a34a", borderRadius:"2px", display:"inline-block", flexShrink:0 }} />
+                <h4 style={{ color:t.footerHead, fontSize:"0.72rem", fontWeight:700, letterSpacing:"0.1em", textTransform:"uppercase", margin:0 }}>Product</h4>
+              </div>
+              <ul className="flex flex-col gap-3">
+                {["Platform Overview","AI Image Product Detection","Smart Inventory Management","Profit & Sales Analytics","Retail Insights Dashboard"].map(link => (
+                  <li key={link}>
+                    <a href="#"
+                      style={{ display:"flex", alignItems:"center", gap:"0.4rem", color:t.footerLink, fontSize:"0.82rem", transition:"color 0.2s", textDecoration:"none" }}
+                      onMouseEnter={e => { e.currentTarget.style.color="#16a34a"; e.currentTarget.firstChild.style.opacity="1"; e.currentTarget.firstChild.style.transform="translateX(2px)"; }}
+                      onMouseLeave={e => { e.currentTarget.style.color=t.footerLink; e.currentTarget.firstChild.style.opacity="0"; e.currentTarget.firstChild.style.transform="translateX(0)"; }}
+                    >
+                      <span style={{ opacity:0, transition:"opacity 0.2s, transform 0.2s", color:"#16a34a", fontWeight:700, fontSize:"0.9rem", lineHeight:1 }}>›</span>
+                      {link}
+                    </a>
+                  </li>
+                ))}
+              </ul>
+            </div>
 
-          {/* Company */}
-          <div>
-            <h4 style={{ color: t.footerHead, fontSize: "0.75rem", fontWeight: 700, letterSpacing: "0.1em", textTransform: "uppercase", marginBottom: "1.25rem" }}>Company</h4>
-            <ul className="flex flex-col gap-3">
-              {["About AlphaMetrics","Careers","Latest News","Privacy Policy","Terms of Service"].map(link => (
-                <li key={link}>
-                  <a href="#" style={{ color: t.footerLink, fontSize: "0.875rem", transition: "color 0.2s" }}
-                    onMouseEnter={e => e.currentTarget.style.color = "#16a34a"}
-                    onMouseLeave={e => e.currentTarget.style.color = t.footerLink}
-                  >{link}</a>
-                </li>
-              ))}
-            </ul>
-          </div>
+            {/* Features */}
+            <div>
+              <div style={{ display:"flex", alignItems:"center", gap:"0.5rem", marginBottom:"1.25rem" }}>
+                <span style={{ width:"3px", height:"14px", background:"#16a34a", borderRadius:"2px", display:"inline-block", flexShrink:0 }} />
+                <h4 style={{ color:t.footerHead, fontSize:"0.72rem", fontWeight:700, letterSpacing:"0.1em", textTransform:"uppercase", margin:0 }}>Features</h4>
+              </div>
+              <ul className="flex flex-col gap-3">
+                {["Computer Vision Product Recognition","Real-time Profit Tracking","Sales History & Reporting","Business KPI Analytics","Data Visualization Dashboard"].map(link => (
+                  <li key={link}>
+                    <a href="#"
+                      style={{ display:"flex", alignItems:"center", gap:"0.4rem", color:t.footerLink, fontSize:"0.82rem", transition:"color 0.2s", textDecoration:"none" }}
+                      onMouseEnter={e => { e.currentTarget.style.color="#16a34a"; e.currentTarget.firstChild.style.opacity="1"; e.currentTarget.firstChild.style.transform="translateX(2px)"; }}
+                      onMouseLeave={e => { e.currentTarget.style.color=t.footerLink; e.currentTarget.firstChild.style.opacity="0"; e.currentTarget.firstChild.style.transform="translateX(0)"; }}
+                    >
+                      <span style={{ opacity:0, transition:"opacity 0.2s, transform 0.2s", color:"#16a34a", fontWeight:700, fontSize:"0.9rem", lineHeight:1 }}>›</span>
+                      {link}
+                    </a>
+                  </li>
+                ))}
+              </ul>
+            </div>
 
-          {/* Contact */}
-          <div>
-            <h4 style={{ color: t.footerHead, fontSize: "0.75rem", fontWeight: 700, letterSpacing: "0.1em", textTransform: "uppercase", marginBottom: "1.25rem" }}>Contact Us</h4>
-            <ul className="flex flex-col gap-4">
-              {[
-                { icon: "M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z", text: "hello@alphametrics.ai" },
-                { icon: "M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z", text: "+1 (555) 000-1234" },
-                { icon: "M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0zM15 11a3 3 0 11-6 0 3 3 0 016 0z", text: "100 Market St, San Francisco, CA 94105" },
-              ].map((item, i) => (
-                <li key={i} className="flex items-start gap-3 cursor-pointer"
-                  onMouseEnter={e => e.currentTarget.querySelector("span").style.color = "#16a34a"}
-                  onMouseLeave={e => e.currentTarget.querySelector("span").style.color = t.footerLink}
-                >
-                  <svg className="w-4 h-4 mt-0.5 flex-shrink-0" fill="none" stroke="#16a34a" strokeWidth="2" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" d={item.icon} />
-                  </svg>
-                  <span style={{ color: t.footerLink, fontSize: "0.875rem", lineHeight: "1.5", transition: "color 0.2s" }}>{item.text}</span>
-                </li>
-              ))}
-            </ul>
+            {/* Contact + Developer */}
+            <div className="flex flex-col gap-6">
+              <div>
+                <div style={{ display:"flex", alignItems:"center", gap:"0.5rem", marginBottom:"1.25rem" }}>
+                  <span style={{ width:"3px", height:"14px", background:"#16a34a", borderRadius:"2px", display:"inline-block", flexShrink:0 }} />
+                  <h4 style={{ color:t.footerHead, fontSize:"0.72rem", fontWeight:700, letterSpacing:"0.1em", textTransform:"uppercase", margin:0 }}>Contact</h4>
+                </div>
+                <div className="flex flex-col gap-3">
+                  <a href="mailto:contact.alphametrics.project@gmail.com"
+                    style={{ display:"flex", alignItems:"flex-start", gap:"0.6rem", color:t.footerLink, fontSize:"0.8rem", transition:"color 0.2s", wordBreak:"break-all", textDecoration:"none" }}
+                    onMouseEnter={e => e.currentTarget.style.color="#16a34a"}
+                    onMouseLeave={e => e.currentTarget.style.color=t.footerLink}
+                  >
+                    <svg style={{ width:"15px", height:"15px", marginTop:"2px", flexShrink:0 }} fill="none" stroke="currentColor" strokeWidth="1.8" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/>
+                    </svg>
+                    <span>alphametrics@gmail.com</span>
+                  </a>
+                  <a href="#"
+                    style={{ display:"flex", alignItems:"center", gap:"0.6rem", color:t.footerLink, fontSize:"0.8rem", transition:"color 0.2s", textDecoration:"none" }}
+                    onMouseEnter={e => e.currentTarget.style.color="#16a34a"}
+                    onMouseLeave={e => e.currentTarget.style.color=t.footerLink}
+                  >
+                    <svg style={{ width:"15px", height:"15px", flexShrink:0 }} fill="currentColor" viewBox="0 0 24 24">
+                      <path d="M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433a2.062 2.062 0 01-2.063-2.065 2.064 2.064 0 112.063 2.065zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.003z"/>
+                    </svg>
+                    <span>LinkedIn Profile</span>
+                  </a>
+                </div>
+              </div>
+              <div style={{ borderRadius:"12px", padding:"1rem", background:"rgba(22,163,74,0.07)", border:"1px solid rgba(22,163,74,0.2)" }}>
+                <p style={{ color:"#16a34a", fontSize:"0.65rem", fontWeight:700, letterSpacing:"0.1em", textTransform:"uppercase", marginBottom:"0.5rem" }}>Developer</p>
+                <p style={{ color:t.footerHead, fontSize:"0.92rem", fontWeight:700, marginBottom:"0.2rem" }}>Pranav</p>
+                <p style={{ color:t.footerBody, fontSize:"0.78rem" }}>AI / ML Engineering Project</p>
+              </div>
+            </div>
+
           </div>
         </div>
 
         {/* Bottom bar */}
-        <div className="px-8 py-5 flex flex-col sm:flex-row items-center justify-between gap-3" style={{ borderTop: `1px solid ${t.footerBottomBorder}` }}>
-          <p style={{ color: t.footerBottom, fontSize: "0.78rem", letterSpacing: "0.02em", fontFamily: "'Inter',sans-serif" }}>
-            © 2026 AlphaMetrics. All rights reserved.
+        <div className="max-w-7xl mx-auto px-8 py-5 flex flex-col sm:flex-row items-center justify-between gap-2" style={{ borderTop: `1px solid ${t.footerBottomBorder}` }}>
+          <p style={{ color: t.footerBottom, fontSize: "0.78rem", letterSpacing: "0.02em" }}>
+            © 2026 AlphaMetrics.AI Retail Intelligence Platform
           </p>
-          <div className="flex items-center gap-6">
-            {["Privacy","Cookies","Security"].map(link => (
-              <a key={link} href="#"
-                style={{ color: t.footerBottom, fontSize: "0.78rem", letterSpacing: "0.03em", fontWeight: 500, transition: "color 0.2s", fontFamily: "'Inter',sans-serif" }}
-                onMouseEnter={e => e.currentTarget.style.color = "#16a34a"}
-                onMouseLeave={e => e.currentTarget.style.color = t.footerBottom}
-              >{link}</a>
-            ))}
-          </div>
+          <p style={{ color: t.footerBottom, fontSize: "0.75rem" }}>
+            Built for educational and research purposes.
+          </p>
         </div>
       </footer>
+      {/* ── Login Modal ── */}
+      {showLoginModal && (
+        <div
+          className="fixed inset-0 z-[9999] flex items-center justify-center px-4"
+          style={{ background: "rgba(0,0,0,0.55)", backdropFilter: "blur(4px)" }}
+          onClick={() => setShowLoginModal(false)}
+        >
+          <div
+            className="w-full max-w-md rounded-2xl p-8 shadow-2xl relative"
+            style={{ background: "#ffffff" }}
+            onClick={e => e.stopPropagation()}
+          >
+            {/* Close button */}
+            <button
+              onClick={() => setShowLoginModal(false)}
+              className="absolute top-4 right-4 w-8 h-8 flex items-center justify-center rounded-full hover:bg-gray-100 transition-colors"
+              style={{ background: "none", border: "none", cursor: "pointer", color: "#9ca3af", fontSize: "1.2rem", fontWeight: 700 }}
+              aria-label="Close"
+            >✕</button>
+
+            {/* Title */}
+            <div className="text-center mb-7">
+              <img src="/webname.png" alt="AlphaMetrics" className="mx-auto h-8 object-contain" />
+              <p className="text-sm mt-3" style={{ color: "#6b7280" }}>Sign in to your account</p>
+            </div>
+
+            {loginError && (
+              <div className="mb-4 px-4 py-3 rounded-lg text-sm font-medium" style={{ background: "#fee2e2", color: "#b91c1c" }}>
+                {loginError}
+              </div>
+            )}
+
+            <form onSubmit={submitLoginModal} className="flex flex-col gap-5">
+              {/* Email */}
+              <div className="flex flex-col gap-1.5">
+                <label className="text-sm font-semibold" style={{ color: "#374151" }}>Email Address</label>
+                <input
+                  type="email"
+                  name="email"
+                  value={loginForm.email}
+                  onChange={handleLoginFormChange}
+                  placeholder="you@example.com"
+                  className="w-full px-4 py-3 rounded-xl border outline-none text-sm transition-all"
+                  style={{ border: "1.5px solid #d1d5db", color: "#111827" }}
+                  onFocus={e => (e.target.style.borderColor = "#10b981")}
+                  onBlur={e => (e.target.style.borderColor = "#d1d5db")}
+                />
+              </div>
+
+              {/* Password */}
+              <div className="flex flex-col gap-1.5">
+                <label className="text-sm font-semibold" style={{ color: "#374151" }}>Password</label>
+                <div className="relative">
+                  <input
+                    type={showLoginPass ? "text" : "password"}
+                    name="password"
+                    value={loginForm.password}
+                    onChange={handleLoginFormChange}
+                    placeholder="••••••••"
+                    className="w-full px-4 py-3 rounded-xl border outline-none text-sm transition-all pr-11"
+                    style={{ border: "1.5px solid #d1d5db", color: "#111827" }}
+                    onFocus={e => (e.target.style.borderColor = "#10b981")}
+                    onBlur={e => (e.target.style.borderColor = "#d1d5db")}
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setShowLoginPass(v => !v)}
+                    className="absolute right-3 top-1/2 -translate-y-1/2 text-xs font-semibold"
+                    style={{ background: "none", border: "none", cursor: "pointer", color: "#9ca3af" }}
+                  >{showLoginPass ? "Hide" : "Show"}</button>
+                </div>
+              </div>
+
+              <button
+                type="submit"
+                className="w-full py-3 rounded-xl font-bold text-white text-base transition-all hover:opacity-90"
+                style={{ background: "#10b981", border: "none", cursor: "pointer" }}
+              >Sign In</button>
+            </form>
+
+            <p className="text-center text-sm mt-5" style={{ color: "#6b7280" }}>
+              Don't have an account?{" "}
+              <button
+                type="button"
+                onClick={openRegister}
+                className="font-semibold hover:underline"
+                style={{ background: "none", border: "none", cursor: "pointer", color: "#10b981", padding: 0 }}
+              >Register</button>
+            </p>
+          </div>
+        </div>
+      )}
+
+      {/* ── Register Modal ── */}
+      {showRegisterModal && (
+        <div
+          className="fixed inset-0 z-[9999] flex items-center justify-center px-4 py-6"
+          style={{ background: "rgba(0,0,0,0.55)", backdropFilter: "blur(4px)" }}
+          onClick={() => setShowRegisterModal(false)}
+        >
+          <div
+            className="w-full max-w-3xl rounded-2xl shadow-2xl overflow-hidden flex relative"
+            style={{ maxHeight: "90vh" }}
+            onClick={e => e.stopPropagation()}
+          >
+            {/* Left green panel */}
+            <div
+              className="hidden md:flex flex-col justify-between p-8 flex-shrink-0"
+              style={{ width: "50%", background: "linear-gradient(160deg,#1a5c3a 0%,#10b981 100%)" }}
+            >
+              <div>
+                <p className="font-extrabold tracking-widest mb-8 text-base" style={{ color: "#ffffff", letterSpacing: "0.15em" }}>
+                  Alpha<span style={{ color: "#a7f3d0" }}>Metrics</span>
+                </p>
+                <h2 className="text-2xl font-extrabold text-white leading-snug mb-3">
+                  Start Your<br />Retail Journey
+                </h2>
+                <p className="text-sm leading-relaxed mb-6" style={{ color: "rgba(255,255,255,0.8)" }}>
+                  AI-powered insights to grow your business, predict demand, and optimise inventory.
+                </p>
+                <ul className="flex flex-col gap-3">
+                  {["Real-time analytics dashboard","AI demand forecasting","Smart inventory control"].map(f => (
+                    <li key={f} className="flex items-center gap-2">
+                      <span className="w-5 h-5 rounded-full flex items-center justify-center flex-shrink-0"
+                        style={{ background: "rgba(255,255,255,0.25)" }}>
+                        <svg className="w-3 h-3" fill="none" stroke="white" strokeWidth="2.5" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
+                        </svg>
+                      </span>
+                      <span className="text-white text-sm font-semibold">{f}</span>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+              <p className="text-xs" style={{ color: "rgba(255,255,255,0.6)" }}>© 2026 AlphaMetrics</p>
+            </div>
+
+            {/* Right white panel */}
+            <div className="flex-1 bg-white p-8 overflow-y-auto" style={{ maxHeight: "90vh" }}>
+              {/* Close */}
+              <button
+                onClick={() => setShowRegisterModal(false)}
+                className="absolute top-4 right-4 w-8 h-8 flex items-center justify-center rounded-full hover:bg-gray-100 transition-colors"
+                style={{ background: "none", border: "none", cursor: "pointer", color: "#9ca3af", fontSize: "1.2rem", fontWeight: 700 }}
+                aria-label="Close"
+              >✕</button>
+
+              {regSubmitted ? (
+                <div className="flex flex-col items-center justify-center gap-4 py-16">
+                  <div className="w-16 h-16 rounded-full flex items-center justify-center" style={{ background: "#d1fae5" }}>
+                    <svg className="w-8 h-8" fill="none" stroke="#10b981" strokeWidth="2.5" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
+                    </svg>
+                  </div>
+                  <p className="text-lg font-bold" style={{ color: "#1a2e5a" }}>Account Created!</p>
+                  <p className="text-sm text-center" style={{ color: "#6b7280" }}>Redirecting you to sign in…</p>
+                </div>
+              ) : (
+                <>
+                  <h2 className="text-2xl font-extrabold mb-1" style={{ color: "#1a2e5a" }}>Create Account</h2>
+                  <p className="text-sm mb-6" style={{ color: "#6b7280" }}>Fill in the details below to get started</p>
+
+                  <form onSubmit={submitRegModal} className="flex flex-col gap-4">
+                    {/* Row 1: Name + Occupation */}
+                    <div className="grid grid-cols-2 gap-3">
+                      <div className="flex flex-col gap-1">
+                        <label className="text-xs font-bold uppercase tracking-wider" style={{ color: "#6b7280" }}>Full Name</label>
+                        <input type="text" name="name" value={regForm.name} onChange={handleRegFormChange} placeholder="John Smith"
+                          className="px-3 py-2.5 rounded-lg border outline-none text-sm transition-all"
+                          style={regFieldStyle(regErrors.name)}
+                          onFocus={e => (e.target.style.borderColor = "#10b981")}
+                          onBlur={e => (e.target.style.borderColor = regErrors.name ? "#ef4444" : "#e5e7eb")} />
+                        {regErrors.name && <p className="text-xs" style={{ color: "#ef4444" }}>{regErrors.name}</p>}
+                      </div>
+                      <div className="flex flex-col gap-1">
+                        <label className="text-xs font-bold uppercase tracking-wider" style={{ color: "#6b7280" }}>Occupation</label>
+                        <select name="occupation" value={regForm.occupation} onChange={handleRegFormChange}
+                          className="px-3 py-2.5 rounded-lg border outline-none text-sm transition-all"
+                          style={regFieldStyle(regErrors.occupation)}
+                          onFocus={e => (e.target.style.borderColor = "#10b981")}
+                          onBlur={e => (e.target.style.borderColor = regErrors.occupation ? "#ef4444" : "#e5e7eb")}>
+                          <option value="">Select…</option>
+                          {OCCUPATIONS.map(o => <option key={o} value={o}>{o}</option>)}
+                        </select>
+                        {regErrors.occupation && <p className="text-xs" style={{ color: "#ef4444" }}>{regErrors.occupation}</p>}
+                      </div>
+                    </div>
+
+                    {/* Email */}
+                    <div className="flex flex-col gap-1">
+                      <label className="text-xs font-bold uppercase tracking-wider" style={{ color: "#6b7280" }}>Email Address</label>
+                      <input type="email" name="email" value={regForm.email} onChange={handleRegFormChange} placeholder="you@example.com"
+                        className="px-3 py-2.5 rounded-lg border outline-none text-sm transition-all"
+                        style={regFieldStyle(regErrors.email)}
+                        onFocus={e => (e.target.style.borderColor = "#10b981")}
+                        onBlur={e => (e.target.style.borderColor = regErrors.email ? "#ef4444" : "#e5e7eb")} />
+                      {regErrors.email && <p className="text-xs" style={{ color: "#ef4444" }}>{regErrors.email}</p>}
+                    </div>
+
+                    {/* Row 3: Password + Confirm */}
+                    <div className="grid grid-cols-2 gap-3">
+                      <div className="flex flex-col gap-1">
+                        <label className="text-xs font-bold uppercase tracking-wider" style={{ color: "#6b7280" }}>Password</label>
+                        <div className="relative">
+                          <input type={showRegPass ? "text" : "password"} name="password" value={regForm.password} onChange={handleRegFormChange} placeholder="••••••••"
+                            className="w-full px-3 py-2.5 rounded-lg border outline-none text-sm transition-all pr-10"
+                            style={regFieldStyle(regErrors.password)}
+                            onFocus={e => (e.target.style.borderColor = "#10b981")}
+                            onBlur={e => (e.target.style.borderColor = regErrors.password ? "#ef4444" : "#e5e7eb")} />
+                          <button type="button" onClick={() => setShowRegPass(v => !v)}
+                            className="absolute right-2 top-1/2 -translate-y-1/2 text-xs font-semibold"
+                            style={{ background: "none", border: "none", cursor: "pointer", color: "#9ca3af" }}>
+                            {showRegPass ? "Hide" : "Show"}
+                          </button>
+                        </div>
+                        {regErrors.password && <p className="text-xs" style={{ color: "#ef4444" }}>{regErrors.password}</p>}
+                      </div>
+                      <div className="flex flex-col gap-1">
+                        <label className="text-xs font-bold uppercase tracking-wider" style={{ color: "#6b7280" }}>Confirm</label>
+                        <div className="relative">
+                          <input type={showRegConfirmPass ? "text" : "password"} name="confirmPassword" value={regForm.confirmPassword} onChange={handleRegFormChange} placeholder="••••••••"
+                            className="w-full px-3 py-2.5 rounded-lg border outline-none text-sm transition-all pr-10"
+                            style={regFieldStyle(regErrors.confirmPassword)}
+                            onFocus={e => (e.target.style.borderColor = "#10b981")}
+                            onBlur={e => (e.target.style.borderColor = regErrors.confirmPassword ? "#ef4444" : "#e5e7eb")} />
+                          <button type="button" onClick={() => setShowRegConfirmPass(v => !v)}
+                            className="absolute right-2 top-1/2 -translate-y-1/2 text-xs font-semibold"
+                            style={{ background: "none", border: "none", cursor: "pointer", color: "#9ca3af" }}>
+                            {showRegConfirmPass ? "Hide" : "Show"}
+                          </button>
+                        </div>
+                        {regErrors.confirmPassword && <p className="text-xs" style={{ color: "#ef4444" }}>{regErrors.confirmPassword}</p>}
+                      </div>
+                    </div>
+
+                    <button type="submit"
+                      className="w-full py-3 rounded-xl font-bold text-white text-base transition-all hover:opacity-90 mt-1"
+                      style={{ background: "#10b981", border: "none", cursor: "pointer" }}
+                    >Create Account →</button>
+                  </form>
+
+                  <p className="text-center text-sm mt-5" style={{ color: "#6b7280" }}>
+                    Already have an account?{" "}
+                    <button type="button" onClick={openLogin}
+                      className="font-semibold hover:underline"
+                      style={{ background: "none", border: "none", cursor: "pointer", color: "#10b981", padding: 0 }}
+                    >Sign In</button>
+                  </p>
+                </>
+              )}
+            </div>
+          </div>
+        </div>
+      )}
 
     </div>
   );
