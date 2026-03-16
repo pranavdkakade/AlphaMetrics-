@@ -293,6 +293,13 @@ export default function Home() {
               onMouseEnter={e => e.currentTarget.style.color = t.navHover}
               onMouseLeave={e => e.currentTarget.style.color = t.navText}
             >The Process</a>
+            <Link
+              to="/dashboard"
+              className="font-medium cursor-pointer"
+              style={{ fontFamily: "'Inter',sans-serif", color: t.navText, fontSize: "0.9rem", letterSpacing: "0.01em", transition: "color 0.2s", textDecoration: "none" }}
+              onMouseEnter={e => e.currentTarget.style.color = t.navHover}
+              onMouseLeave={e => e.currentTarget.style.color = t.navText}
+            >Dashboard</Link>
 
             {/* Theme Toggle */}
             <button
@@ -355,6 +362,7 @@ export default function Home() {
               { label: "Home",         onClick: () => { window.scrollTo({ top: 0, behavior: "smooth" }); setMenuOpen(false); } },
               { label: "Capabilities", onClick: () => { document.getElementById("capabilities").scrollIntoView({ behavior: "smooth" }); setMenuOpen(false); } },
               { label: "The Process",  onClick: () => { document.getElementById("the-process").scrollIntoView({ behavior: "smooth" }); setMenuOpen(false); } },
+              { label: "Dashboard",    onClick: () => { navigate("/dashboard"); setMenuOpen(false); } },
             ].map(item => (
               <button
                 key={item.label}
