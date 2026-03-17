@@ -1,23 +1,34 @@
 import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
+import { AUTH_TOKEN_KEY, loginUser } from "../services/api";
 
 export default function Login() {
   const navigate = useNavigate();
   const [form, setForm] = useState({ email: "", password: "" });
   const [showPass, setShowPass] = useState(false);
   const [error, setError] = useState("");
+  const [loading, setLoading] = useState(false);
 
   const handle = (e) => setForm({ ...form, [e.target.name]: e.target.value });
 
-  const submit = (e) => {
+  const submit = async (e) => {
     e.preventDefault();
     if (!form.email || !form.password) {
       setError("Please fill in all fields.");
       return;
     }
-    setError("");
-    // TODO: wire up real auth
-    navigate("/dashboard");
+
+    try {
+      setLoading(true);
+      setError("");
+      const data = await loginUser(form.email, form.password);
+      localStorage.setItem(AUTH_TOKEN_KEY, data.access_token);
+      navigate("/dashboard");
+    } catch (err) {
+      setError(err.message || "Login failed. Please try again.");
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -93,10 +104,11 @@ export default function Login() {
           {/* Submit */}
           <button
             type="submit"
+            disabled={loading}
             className="w-full py-3 rounded-xl font-bold text-white text-base transition-all hover:opacity-90 mt-1"
-            style={{ background: "#10b981" }}
+            style={{ background: loading ? "#6ee7b7" : "#10b981", cursor: loading ? "not-allowed" : "pointer" }}
           >
-            Sign In
+            {loading ? "Signing In..." : "Sign In"}
           </button>
         </form>
 

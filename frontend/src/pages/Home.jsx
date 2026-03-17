@@ -1,5 +1,6 @@
 ﻿import { useState, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
+import { AUTH_TOKEN_KEY, loginUser, registerUser, verifyAuthToken } from "../services/api";
 
 /* ────────────────────────────────────────────────
    THEME TOKENS
@@ -152,17 +153,74 @@ export default function Home() {
   const [loginForm, setLoginForm] = useState({ email: "", password: "" });
   const [loginError, setLoginError] = useState("");
   const [showLoginPass, setShowLoginPass] = useState(false);
+  const [loginLoading, setLoginLoading] = useState(false);
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
+
+  useEffect(() => {
+    let active = true;
+
+    async function syncAuthState() {
+      const token = localStorage.getItem(AUTH_TOKEN_KEY);
+      if (!token) {
+        if (active) setIsAuthenticated(false);
+        return;
+      }
+
+      const valid = await verifyAuthToken(token);
+      if (active) {
+        if (!valid) localStorage.removeItem(AUTH_TOKEN_KEY);
+        setIsAuthenticated(valid);
+      }
+    }
+
+    syncAuthState();
+
+    const onStorage = () => syncAuthState();
+    window.addEventListener("storage", onStorage);
+
+    return () => {
+      active = false;
+      window.removeEventListener("storage", onStorage);
+    };
+  }, []);
 
   const handleLoginFormChange = (e) => setLoginForm({ ...loginForm, [e.target.name]: e.target.value });
-  const submitLoginModal = (e) => {
+  const submitLoginModal = async (e) => {
     e.preventDefault();
     if (!loginForm.email || !loginForm.password) {
       setLoginError("Please fill in all fields.");
       return;
     }
-    setLoginError("");
-    setShowLoginModal(false);
-    navigate("/dashboard");
+
+    try {
+      setLoginLoading(true);
+      setLoginError("");
+      const data = await loginUser(loginForm.email, loginForm.password);
+      localStorage.setItem(AUTH_TOKEN_KEY, data.access_token);
+      setIsAuthenticated(true);
+      setShowLoginModal(false);
+      navigate("/dashboard");
+    } catch (err) {
+      setLoginError(err.message || "Login failed. Please try again.");
+    } finally {
+      setLoginLoading(false);
+    }
+  };
+
+  const handleDashboardClick = (e) => {
+    e.preventDefault();
+    if (isAuthenticated) {
+      navigate("/dashboard");
+      return;
+    }
+    openLogin();
+  };
+
+  const handleLogout = () => {
+    localStorage.removeItem(AUTH_TOKEN_KEY);
+    setIsAuthenticated(false);
+    setMenuOpen(false);
+    navigate("/");
   };
   const openLogin = () => { setLoginForm({ email: "", password: "" }); setLoginError(""); setShowLoginModal(true); setShowRegisterModal(false); };
 
@@ -174,6 +232,7 @@ export default function Home() {
   const [regSubmitted, setRegSubmitted] = useState(false);
   const [showRegPass, setShowRegPass] = useState(false);
   const [showRegConfirmPass, setShowRegConfirmPass] = useState(false);
+  const [regLoading, setRegLoading] = useState(false);
 
   const handleRegFormChange = (e) => setRegForm({ ...regForm, [e.target.name]: e.target.value });
   const validateReg = () => {
@@ -188,13 +247,41 @@ export default function Home() {
     else if (regForm.password !== regForm.confirmPassword) e.confirmPassword = "Passwords do not match.";
     return e;
   };
-  const submitRegModal = (e) => {
+  const submitRegModal = async (e) => {
     e.preventDefault();
     const errs = validateReg();
     if (Object.keys(errs).length > 0) { setRegErrors(errs); return; }
-    setRegErrors({});
-    setRegSubmitted(true);
-    setTimeout(() => { setShowRegisterModal(false); setRegSubmitted(false); setRegForm({ name: "", occupation: "", email: "", password: "", confirmPassword: "" }); openLogin(); }, 1800);
+
+    try {
+      setRegLoading(true);
+      setRegErrors({});
+      await registerUser({
+        name: regForm.name,
+        occupation: regForm.occupation,
+        email: regForm.email,
+        password: regForm.password,
+      });
+
+      const registeredEmail = regForm.email;
+      const registeredPassword = regForm.password;
+      setRegSubmitted(true);
+      setTimeout(() => {
+        setShowRegisterModal(false);
+        setRegSubmitted(false);
+        setRegForm({ name: "", occupation: "", email: "", password: "", confirmPassword: "" });
+        setLoginForm({ email: registeredEmail, password: registeredPassword });
+        setLoginError("");
+        setShowLoginModal(true);
+      }, 1600);
+    } catch (err) {
+      if ((err.message || "").toLowerCase().includes("email already registered")) {
+        setRegErrors({ email: "Email already registered." });
+      } else {
+        setRegErrors({ email: err.message || "Registration failed. Please try again." });
+      }
+    } finally {
+      setRegLoading(false);
+    }
   };
   const openRegister = () => { setRegForm({ name: "", occupation: "", email: "", password: "", confirmPassword: "" }); setRegErrors({}); setRegSubmitted(false); setShowRegisterModal(true); setShowLoginModal(false); };
   const regFieldStyle = (hasErr) => ({ border: `1.5px solid ${hasErr ? "#ef4444" : "#d1d5db"}`, color: "#111827" });
@@ -293,13 +380,14 @@ export default function Home() {
               onMouseEnter={e => e.currentTarget.style.color = t.navHover}
               onMouseLeave={e => e.currentTarget.style.color = t.navText}
             >The Process</a>
-            <Link
-              to="/dashboard"
+            <a
+              href="/dashboard"
+              onClick={handleDashboardClick}
               className="font-medium cursor-pointer"
               style={{ fontFamily: "'Inter',sans-serif", color: t.navText, fontSize: "0.9rem", letterSpacing: "0.01em", transition: "color 0.2s", textDecoration: "none" }}
               onMouseEnter={e => e.currentTarget.style.color = t.navHover}
               onMouseLeave={e => e.currentTarget.style.color = t.navText}
-            >Dashboard</Link>
+            >Dashboard</a>
 
             {/* Theme Toggle */}
             <button
@@ -314,12 +402,12 @@ export default function Home() {
             </button>
 
             <button
-              onClick={openLogin}
+              onClick={isAuthenticated ? handleLogout : openLogin}
               className="text-white px-5 py-2 rounded-lg font-semibold"
               style={{ fontFamily: "'Inter',sans-serif", background: t.loginBtn, fontSize: "0.9rem", letterSpacing: "0.02em", transition: "background 0.2s", border: "none", cursor: "pointer" }}
               onMouseEnter={e => e.currentTarget.style.background = t.loginBtnHover}
               onMouseLeave={e => e.currentTarget.style.background = t.loginBtn}
-            >Login</button>
+            >{isAuthenticated ? "Logout" : "Login"}</button>
           </nav>
 
           {/* Mobile right side: theme toggle + hamburger */}
@@ -362,7 +450,7 @@ export default function Home() {
               { label: "Home",         onClick: () => { window.scrollTo({ top: 0, behavior: "smooth" }); setMenuOpen(false); } },
               { label: "Capabilities", onClick: () => { document.getElementById("capabilities").scrollIntoView({ behavior: "smooth" }); setMenuOpen(false); } },
               { label: "The Process",  onClick: () => { document.getElementById("the-process").scrollIntoView({ behavior: "smooth" }); setMenuOpen(false); } },
-              { label: "Dashboard",    onClick: () => { navigate("/dashboard"); setMenuOpen(false); } },
+              { label: "Dashboard",    onClick: () => { if (isAuthenticated) { navigate("/dashboard"); } else { openLogin(); } setMenuOpen(false); } },
             ].map(item => (
               <button
                 key={item.label}
@@ -375,10 +463,10 @@ export default function Home() {
               </button>
             ))}
             <button
-              onClick={() => { setMenuOpen(false); openLogin(); }}
+              onClick={() => { setMenuOpen(false); if (isAuthenticated) { handleLogout(); } else { openLogin(); } }}
               className="text-white text-center rounded-lg font-semibold mt-3 py-2.5"
               style={{ background: t.loginBtn, fontFamily: "'Inter',sans-serif", fontSize: "0.9rem", letterSpacing: "0.02em", transition: "background 0.2s", border: "none", cursor: "pointer", width: "100%" }}
-            >Login</button>
+            >{isAuthenticated ? "Logout" : "Login"}</button>
           </div>
         </div>
       </header>
@@ -1151,9 +1239,10 @@ export default function Home() {
 
               <button
                 type="submit"
+                disabled={loginLoading}
                 className="w-full py-3 rounded-xl font-bold text-white text-base transition-all hover:opacity-90"
-                style={{ background: "#10b981", border: "none", cursor: "pointer" }}
-              >Sign In</button>
+                style={{ background: loginLoading ? "#6ee7b7" : "#10b981", border: "none", cursor: loginLoading ? "not-allowed" : "pointer" }}
+              >{loginLoading ? "Signing In..." : "Sign In"}</button>
             </form>
 
             <p className="text-center text-sm mt-5" style={{ color: "#6b7280" }}>
@@ -1312,9 +1401,10 @@ export default function Home() {
                     </div>
 
                     <button type="submit"
+                      disabled={regLoading}
                       className="w-full py-3 rounded-xl font-bold text-white text-base transition-all hover:opacity-90 mt-1"
-                      style={{ background: "#10b981", border: "none", cursor: "pointer" }}
-                    >Create Account →</button>
+                      style={{ background: regLoading ? "#6ee7b7" : "#10b981", border: "none", cursor: regLoading ? "not-allowed" : "pointer" }}
+                    >{regLoading ? "Creating Account..." : "Create Account →"}</button>
                   </form>
 
                   <p className="text-center text-sm mt-5" style={{ color: "#6b7280" }}>
