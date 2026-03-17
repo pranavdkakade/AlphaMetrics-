@@ -1,6 +1,8 @@
 from datetime import datetime, timedelta, timezone
 import hashlib
 import hmac
+import json
+from pathlib import Path
 
 from fastapi import Depends, FastAPI, HTTPException, status
 from fastapi.middleware.cors import CORSMiddleware
@@ -22,6 +24,7 @@ SECRET_KEY = "replace-this-with-env-secret"
 ALGORITHM = "HS256"
 ACCESS_TOKEN_EXPIRE_MINUTES = 60
 bearer_scheme = HTTPBearer()
+USERS_FILE = Path(__file__).resolve().parent / "users.json"
 
 
 class LoginRequest(BaseModel):
@@ -50,15 +53,42 @@ def verify_password(password: str, hashed_password: str) -> bool:
     return hmac.compare_digest(computed, hashed_password)
 
 
-# Demo user for now. Replace with DB lookup later.
-FAKE_USER_DB = {
-    "admin@alphametrics.com": {
-        "email": "admin@alphametrics.com",
-        "full_name": "Alpha Admin",
-        "occupation": "Admin",
-        "hashed_password": hash_password("admin123"),
+def _default_users() -> dict:
+    return {
+        "admin@alphametrics.com": {
+            "email": "admin@alphametrics.com",
+            "full_name": "Alpha Admin",
+            "occupation": "Admin",
+            "hashed_password": hash_password("admin123"),
+        }
     }
-}
+
+
+def load_user_db() -> dict:
+    if not USERS_FILE.exists():
+        users = _default_users()
+        USERS_FILE.write_text(json.dumps(users, indent=2), encoding="utf-8")
+        return users
+
+    try:
+        data = json.loads(USERS_FILE.read_text(encoding="utf-8"))
+        if isinstance(data, dict):
+            users = _default_users()
+            users.update(data)
+            return users
+    except (json.JSONDecodeError, OSError):
+        pass
+
+    users = _default_users()
+    USERS_FILE.write_text(json.dumps(users, indent=2), encoding="utf-8")
+    return users
+
+
+def save_user_db(users: dict) -> None:
+    USERS_FILE.write_text(json.dumps(users, indent=2), encoding="utf-8")
+
+
+FAKE_USER_DB = load_user_db()
 
 
 def authenticate_user(email: str, password: str):
@@ -134,6 +164,7 @@ def register(payload: RegisterRequest):
         "occupation": payload.occupation.strip(),
         "hashed_password": hash_password(payload.password),
     }
+    save_user_db(FAKE_USER_DB)
 
     return {"message": "Registered successfully"}
 
@@ -145,5 +176,6 @@ def verify_token(current_user: dict = Depends(get_current_user)):
         "user": {
             "email": current_user["email"],
             "full_name": current_user["full_name"],
+            "occupation": current_user.get("occupation", "Retail Professional"),
         },
     }

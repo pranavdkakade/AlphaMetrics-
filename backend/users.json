@@ -1,0 +1,14 @@
+{
+  "admin@alphametrics.com": {
+    "email": "admin@alphametrics.com",
+    "full_name": "Alpha Admin",
+    "occupation": "Admin",
+    "hashed_password": "240be518fabd2724ddb6f04eeb1da5967448d7e831c08c8fa822809f74c720a9"
+  },
+  "alphamatrix@gmail.com": {
+    "email": "alphamatrix@gmail.com",
+    "full_name": "rison",
+    "occupation": "Retail Store Owner",
+    "hashed_password": "bcb15f821479b4d5772bd0ca866c00ad5f926e3580720659cc80d39c9d09802a"
+  }
+}
