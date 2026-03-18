@@ -1,0 +1,40 @@
+CREATE EXTENSION IF NOT EXISTS pgcrypto;
+
+CREATE TABLE IF NOT EXISTS users (
+	id SERIAL PRIMARY KEY,
+	name VARCHAR(120) NOT NULL,
+	occupation VARCHAR(120) NOT NULL,
+	email VARCHAR(255) UNIQUE NOT NULL,
+	password_hash VARCHAR(255) NOT NULL,
+	created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+
+CREATE TABLE IF NOT EXISTS products (
+	id SERIAL PRIMARY KEY,
+	user_id INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+	name VARCHAR(180) NOT NULL,
+	category VARCHAR(120) NOT NULL,
+	buying_price DOUBLE PRECISION NOT NULL CHECK (buying_price > 0),
+	quantity INTEGER NOT NULL CHECK (quantity >= 0),
+	image_path TEXT,
+	embedding JSONB,
+	created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+
+CREATE TABLE IF NOT EXISTS sales (
+	id SERIAL PRIMARY KEY,
+	user_id INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+	product_id INTEGER NOT NULL REFERENCES products(id) ON DELETE RESTRICT,
+	quantity INTEGER NOT NULL CHECK (quantity > 0),
+	buying_price DOUBLE PRECISION NOT NULL,
+	selling_price DOUBLE PRECISION NOT NULL CHECK (selling_price > 0),
+	revenue DOUBLE PRECISION NOT NULL,
+	profit DOUBLE PRECISION NOT NULL,
+	similarity_score DOUBLE PRECISION,
+	created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+
+CREATE INDEX IF NOT EXISTS idx_products_user_id ON products(user_id);
+CREATE INDEX IF NOT EXISTS idx_sales_user_id ON sales(user_id);
+CREATE INDEX IF NOT EXISTS idx_sales_product_id ON sales(product_id);
+CREATE INDEX IF NOT EXISTS idx_users_email ON users(email);

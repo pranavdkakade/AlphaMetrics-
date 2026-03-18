@@ -1,3 +1,4 @@
+# npm run dev
 # ==============================
 # 🔹 Backend Framework
 # ==============================
@@ -95,6 +96,3 @@ pydantic==2.7.1
 
 
 
-# npm install react-router-dom axios
-# npm install -D tailwindcss postcss autoprefixer
-# npx tailwindcss init -p
