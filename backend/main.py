@@ -12,9 +12,13 @@ from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
 from jose import JWTError, jwt
 from passlib.context import CryptContext
 from pydantic import BaseModel, Field
-from sqlalchemy import DateTime, Float, ForeignKey, Integer, String, Text, create_engine
-from sqlalchemy.dialects.postgresql import JSONB
+from sqlalchemy import JSON, DateTime, Float, ForeignKey, Integer, String, Text, create_engine
 from sqlalchemy.orm import DeclarativeBase, Mapped, Session, mapped_column, relationship, sessionmaker
+
+try:
+    from sqlalchemy.dialects.postgresql import JSONB
+except Exception:
+    JSONB = None
 
 ROOT_DIR = Path(__file__).resolve().parent.parent
 if str(ROOT_DIR) not in sys.path:
@@ -37,7 +41,7 @@ app.add_middleware(
 
 DATABASE_URL = os.getenv(
     "DATABASE_URL",
-    "postgresql+psycopg2://postgres:postgres@localhost:5432/alphametrics",
+    "sqlite:///./alphametrics.db",
 )
 SECRET_KEY = os.getenv("SECRET_KEY", "replace-this-with-env-secret")
 ALGORITHM = "HS256"
@@ -45,10 +49,16 @@ ACCESS_TOKEN_EXPIRE_MINUTES = int(os.getenv("ACCESS_TOKEN_EXPIRE_MINUTES", "120"
 UPLOADS_DIR = Path(__file__).resolve().parent / "uploads"
 UPLOADS_DIR.mkdir(parents=True, exist_ok=True)
 
-engine = create_engine(DATABASE_URL, future=True)
+is_sqlite = DATABASE_URL.startswith("sqlite")
+engine_kwargs: dict[str, Any] = {"future": True}
+if is_sqlite:
+    engine_kwargs["connect_args"] = {"check_same_thread": False}
+
+engine = create_engine(DATABASE_URL, **engine_kwargs)
 SessionLocal = sessionmaker(bind=engine, autoflush=False, autocommit=False, future=True)
 bearer_scheme = HTTPBearer()
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
+embedding_column_type = JSONB if DATABASE_URL.startswith("postgresql") and JSONB is not None else JSON
 
 # ==== DATABASE INITIALIZATION ====
 # Auto-create all tables on backend startup
@@ -93,7 +103,7 @@ class Product(Base):
     buying_price: Mapped[float] = mapped_column(Float, nullable=False)
     quantity: Mapped[int] = mapped_column(Integer, nullable=False)
     image_path: Mapped[str | None] = mapped_column(Text, nullable=True)
-    embedding: Mapped[dict[str, Any] | None] = mapped_column(JSONB, nullable=True)
+    embedding: Mapped[dict[str, Any] | None] = mapped_column(embedding_column_type, nullable=True)
     created_at: Mapped[datetime] = mapped_column(
         DateTime(timezone=True), default=lambda: datetime.now(timezone.utc), nullable=False
     )
