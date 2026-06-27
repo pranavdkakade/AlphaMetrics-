@@ -57,7 +57,7 @@ if is_sqlite:
 engine = create_engine(DATABASE_URL, **engine_kwargs)
 SessionLocal = sessionmaker(bind=engine, autoflush=False, autocommit=False, future=True)
 bearer_scheme = HTTPBearer()
-pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
+# pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 embedding_column_type = JSONB if DATABASE_URL.startswith("postgresql") and JSONB is not None else JSON
 
 # ==== DATABASE INITIALIZATION ====
@@ -164,12 +164,16 @@ def get_db() -> Session:
         db.close()
 
 
+import hashlib
+import hmac
+
 def hash_password(password: str) -> str:
-    return pwd_context.hash(password)
+    return hashlib.sha256(password.encode("utf-8")).hexdigest()
 
 
 def verify_password(password: str, hashed_password: str) -> bool:
-    return pwd_context.verify(password, hashed_password)
+    computed = hash_password(password)
+    return hmac.compare_digest(computed, hashed_password)
 
 
 def create_access_token(user_id: int, expires_delta: timedelta | None = None) -> str:
